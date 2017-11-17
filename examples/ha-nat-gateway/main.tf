@@ -27,7 +27,6 @@ module "nat-us-west1-a" {
   region         = "us-west1"
   zone           = "us-west1-a"
   network        = "default"
-  ip             = "10.138.1.1"
   route_priority = "600"
 }
 
@@ -36,7 +35,6 @@ module "nat-us-west1-b" {
   region         = "us-west1"
   zone           = "us-west1-b"
   network        = "default"
-  ip             = "10.138.1.2"
   route_priority = "700"
 }
 
@@ -45,7 +43,6 @@ module "nat-us-west1-c" {
   region         = "us-west1"
   zone           = "us-west1-c"
   network        = "default"
-  ip             = "10.138.1.3"
   route_priority = "800"
 }
 
