@@ -14,7 +14,9 @@
 
 platform: linux
 inputs:
-- name: terraform-google-nat-gateway
+- name: git
+- name: git-pull-requests
+  optional: true
 outputs:
 - name: email
 image_resource:
@@ -23,6 +25,8 @@ image_resource:
     repository: google/cloud-sdk
     tag: alpine
 params:
+  git_src:
+  git_target:
   service_account_json:
   project_id:
   backend_bucket:
@@ -46,7 +50,23 @@ run:
     gcloud config set compute/zone $zone
     echo "y" | gcloud components install kubectl
 
-    cd terraform-google-nat-gateway
+    BASE_DIR=${PWD}
+
+    EXAMPLE_DIR=examples/gke-nat-gateway
+
+    TEST_DIR=${BASE_DIR}/${git_src}/${EXAMPLE_DIR}
+
+    INFRA_DIR="${BASE_DIR}/${git_src}/tests/infra/example-gke-nat-gateway-private"
+
+    # Always cleanup on exit
+    function cleanup {
+      for d in ${TEST_DIR} ${INFRA_DIR}; do
+        cd ${d}/ && terraform destroy -input=false -lock=false -auto-approve
+      done
+    }
+    trap cleanup EXIT
+
+    cd ${TEST_DIR}
 
     # Setup email
     EMAIL=${PWD}/../email
@@ -62,19 +82,7 @@ run:
     export GOOGLE_APPLICATION_CREDENTIALS=${SA_JSON}
     export GOOGLE_PROJECT=$project_id
 
-    BASE_DIR=${PWD}
-    INFRA_DIR=""
-    TEST_DIR=""
-
-    function cleanup {
-      for d in ${TEST_DIR} ${INFRA_DIR}; do
-        cd ${d}/ && terraform destroy -input=false -lock=false -auto-approve
-      done
-    }
-    trap cleanup EXIT
-
     ### Apply test infrastructure
-    INFRA_DIR=${BASE_DIR}/tests/infra/example-gke-nat-gateway-private
 
     cd ${INFRA_DIR}
 
@@ -93,12 +101,11 @@ run:
     }
     EOF
 
-    terraform init -upgrade=true
+    terraform init -no-color -upgrade=true
     terraform workspace select ${env_name}-infra || terraform workspace new ${env_name}-infra 
-    terraform apply -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
+    terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
 
     ### Begin Terraform example test
-    TEST_DIR=${BASE_DIR}/examples/gke-nat-gateway
 
     # Extract params from terraform outputs    
     NETWORK=$(terraform output subnetwork_name)
@@ -122,10 +129,10 @@ run:
     EOF
     
     # Run Terraform
-    terraform init -upgrade=true
+    terraform init -no-color -upgrade=true
     terraform workspace select ${env_name} || terraform workspace new ${env_name}
-    terraform plan
-    terraform apply -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
+    terraform plan -no-color
+    terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
 
     # Test NAT Gateway
     echo "" > ${EMAIL}/body-failed
@@ -138,3 +145,20 @@ run:
       ((count=count+1))
     done
     test $count -lt 3
+
+    ### Begin pull request test
+    if [[ "${git_src}" != "${git_target}" ]]; then
+      
+      PR_TEST_DIR="${BASE_DIR}/${git_target}/${EXAMPLE_DIR}"
+
+      # Copy remote backend
+      cp "${TEST_DIR}/backend.tf" "${PR_TEST_DIR}/"
+
+      cd ${PR_TEST_DIR}
+
+      # Run Terraform
+      terraform init -no-color -upgrade=true
+      terraform workspace select ${env_name} || terraform workspace new ${env_name}
+      terraform plan -no-color
+      terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
+    fi

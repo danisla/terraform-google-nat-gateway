@@ -12,34 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
  
-resource_types:
-- name: email
-  type: docker-image
-  source:
-    repository: pcfseceng/email-resource
-resources:
-- name: terraform-google-nat-gateway
-  type: git
-  source:
-    uri: {{tf_nat_gw_source_repo}}
-    branch: {{tf_nat_gw_source_branch}}
-- name: once-a-day
-  type: time
-  source:
-    interval: 1440m
-- name: send-an-email
-  type: email
-  source:
-    smtp:
-      host: {{smtp_host}}
-      port: {{smtp_port}}
-      username: {{smtp_username}}
-      password: {{smtp_password}}
-    from: concourse@vicnastea.io
-    to: [ {{maintainer_email}} ]
-
-
 jobs:
+
 ###
 # check-nat-region-map
 ###
@@ -48,7 +22,7 @@ jobs:
   - get: once-a-day
     trigger: true
 
-  - get: terraform-google-nat-gateway
+  - get: git
     trigger: false
 
   - task: check-nat-region-map
@@ -62,7 +36,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: terraform-google-nat-gateway/tests/tasks/check-nat-region-map.yaml
+    file: git/test/tasks/check-nat-region-map.yaml
 
 ###
 # run-example-gke-zonal
@@ -73,7 +47,7 @@ jobs:
   - get: once-a-day
     trigger: true
 
-  - get: terraform-google-nat-gateway
+  - get: git
     trigger: false
 
   - task: run-example-gke-zonal
@@ -90,7 +64,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: terraform-google-nat-gateway/tests/tasks/example-gke-nat-gateway-zonal.yaml
+    file: git/test/tasks/example-gke-nat-gateway-zonal.yaml
 
 ###
 # run-example-gke-regional
@@ -101,7 +75,7 @@ jobs:
   - get: once-a-day
     trigger: true
 
-  - get: terraform-google-nat-gateway
+  - get: git
     trigger: false
 
   - task: run-example-gke-regional
@@ -118,7 +92,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: terraform-google-nat-gateway/tests/tasks/example-gke-nat-gateway-regional.yaml
+    file: git/test/tasks/example-gke-nat-gateway-regional.yaml
 
 ###
 # run-example-gke-private
@@ -129,11 +103,13 @@ jobs:
   - get: once-a-day
     trigger: true
 
-  - get: terraform-google-nat-gateway
+  - get: git
     trigger: false
 
   - task: run-example-gke-private
     params:
+      git_src: git
+      git_target: git
       service_account_json: {{service_account_json}}
       project_id: {{project_id}}
       backend_bucket: {{tf_backend_bucket}}
@@ -146,7 +122,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: terraform-google-nat-gateway/tests/tasks/example-gke-nat-gateway-private.yaml
+    file: git/test/tasks/example-gke-nat-gateway-private.yaml
   
 ###
 # run-example-ha-nat-gateway
@@ -157,7 +133,7 @@ jobs:
   - get: once-a-day
     trigger: true
 
-  - get: terraform-google-nat-gateway
+  - get: git
     trigger: false
 
   - task: test-example-ha-nat
@@ -177,7 +153,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: terraform-google-nat-gateway/tests/tasks/example-ha-nat-gateway.yaml
+    file: git/test/tasks/example-ha-nat-gateway.yaml
 
 ###
 # run-example-lb-nat-gateway
@@ -188,7 +164,7 @@ jobs:
   - get: once-a-day
     trigger: true
 
-  - get: terraform-google-nat-gateway
+  - get: git
     trigger: false
   
   - task: test-example-lb-nat
@@ -205,7 +181,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: terraform-google-nat-gateway/tests/tasks/example-lb-nat-gateway.yaml
+    file: git/test/tasks/example-lb-nat-gateway.yaml
 
 ###
 # run-example-multi-env
@@ -216,7 +192,7 @@ jobs:
   - get: once-a-day
     trigger: true
 
-  - get: terraform-google-nat-gateway
+  - get: git
     trigger: false
   
   - task: test-example-nat-multi-env
@@ -237,4 +213,50 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: terraform-google-nat-gateway/tests/tasks/example-multi-env.yaml
+    file: git/tests/tasks/example-multi-env.yaml
+
+###
+# Resource types
+###
+resource_types:
+resource_types:
+- name: git
+  type: docker-image
+  source:
+    repository: concourse/git-resource
+
+- name: time
+  type: docker-image
+  source:
+    repository: concourse/time-resource
+
+- name: email
+  type: docker-image
+  source:
+    repository: pcfseceng/email-resource
+
+###
+# Resources
+###
+resources:
+- name: git
+  type: git
+  source:
+    uri: {{tf_nat_gw_source_repo}}
+    branch: {{tf_nat_gw_source_branch}}
+
+- name: once-a-day
+  type: time
+  source:
+    interval: 1440m
+
+- name: send-an-email
+  type: email
+  source:
+    smtp:
+      host: {{smtp_host}}
+      port: {{smtp_port}}
+      username: {{smtp_username}}
+      password: {{smtp_password}}
+    from: concourse@vicnastea.io
+    to: [ {{maintainer_email}} ]

@@ -1,0 +1,133 @@
+# Copyright 2017 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+ 
+jobs:
+
+###
+# run-example-gke-zonal-prs
+###
+- name: run-example-gke-zonal
+  serial: true
+  plan:
+  - get: git
+    trigger: false
+  
+  - get: git-pull-requests
+    trigger: true
+    version: every
+  
+  - put: git-pull-requests
+    params:
+      path: git-pull-requests
+      status: pending
+
+  - task: run-example-gke-zonal-pr
+    params:
+      git_src: git
+      git_target: git-pull-requests
+      service_account_json: {{service_account_json}}
+      project_id: {{project_id}}
+      backend_bucket: {{tf_backend_bucket}}
+      backend_prefix: terraform-google-nat-gateway/
+      env_name: tf-ci-nat-gke-zonal-pr
+      region: us-east4
+      zone: us-east4-b
+    on_success:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: success
+    on_failure:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: failure
+    file: git/test/tasks/example-gke-nat-gateway-zonal.yaml
+
+###
+# run-example-gke-private
+###
+- name: run-example-gke-private
+  serial: true
+  plan:
+
+  - get: git
+    trigger: false
+
+  - get: git-pull-requests
+    trigger: true
+    version: every
+  
+  - put: git-pull-requests
+    params:
+      path: git-pull-requests
+      status: pending
+
+  - task: run-example-gke-private
+    params:
+      git_src: git
+      git_target: git-pull-requests
+      service_account_json: {{service_account_json}}
+      project_id: {{project_id}}
+      backend_bucket: {{tf_backend_bucket}}
+      backend_prefix: terraform-google-nat-gateway/
+      env_name: tf-ci-nat-gke-private-pr
+      region: us-west1
+      zone: us-west1-b
+    on_success:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: success
+    on_failure:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: failure
+    file: git/test/tasks/example-gke-nat-gateway-private.yaml
+
+###
+# Resource types
+###
+resource_types:
+resource_types:
+- name: git
+  type: docker-image
+  source:
+    repository: concourse/git-resource
+
+- name: time
+  type: docker-image
+  source:
+    repository: concourse/time-resource
+
+- name: email
+  type: docker-image
+  source:
+    repository: pcfseceng/email-resource
+
+###
+# Resources
+###
+resources:
+- name: git
+  type: git
+  source:
+    uri: {{tf_nat_gw_source_repo}}
+    branch: {{tf_nat_gw_source_branch}}
+
+- name: pull-request
+  type: docker-image
+  source:
+    repository: jtarchie/pr
