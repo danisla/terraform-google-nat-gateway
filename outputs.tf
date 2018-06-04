@@ -34,6 +34,6 @@ output external_ip {
   value       = "${data.google_compute_address.default.address}"
 }
 
-output startup_script {
+output startup_script_test {
   value = "${data.template_file.nat-startup-script.rendered}"
 }
