@@ -69,7 +69,7 @@ run:
     cd ${TEST_DIR}
 
     # Setup email
-    EMAIL=${PWD}/../email
+    EMAIL=${BASE_DIR}/email
     echo "terraform-google-nat-gateway/${env_name}: Failed to run example" > ${EMAIL}/subject-failed
     git --no-pager show > ${EMAIL}/body-failed
 

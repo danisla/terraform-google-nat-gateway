@@ -53,7 +53,12 @@ jobs:
       params:
         path: git-pull-requests
         status: failure
-    file: git/test/tasks/example-gke-nat-gateway-zonal.yaml
+    on_abort:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: failure
+    file: git/tests/tasks/example-gke-nat-gateway-zonal.yaml
 
 ###
 # run-example-gke-private
@@ -95,7 +100,12 @@ jobs:
       params:
         path: git-pull-requests
         status: failure
-    file: git/test/tasks/example-gke-nat-gateway-private.yaml
+    on_abort:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: failure
+    file: git/tests/tasks/example-gke-nat-gateway-private.yaml
 
 ###
 # Resource types
@@ -125,6 +135,6 @@ resources:
   type: pull-request
   source:
     access_token: {{github_access_token}}
-    repo:         ((tf_es_source_github_owner))/((tf_es_source_github_repo))
-    base:         {{tf_es_source_branch}}
+    repo:         ((tf_nat_gw_source_github_owner))/((tf_nat_gw_source_github_repo))
+    base:         {{tf_nat_gw_source_branch}}
     label:        ok-to-test
