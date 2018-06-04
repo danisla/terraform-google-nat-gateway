@@ -32,6 +32,7 @@ params:
   backend_bucket:
   backend_prefix:
   env_name:
+  example_dir:
   infra_dir:
   region:
   zone:
@@ -53,9 +54,7 @@ run:
 
     BASE_DIR=${PWD}
 
-    EXAMPLE_DIR=examples/gke-nat-gateway
-
-    TEST_DIR=${BASE_DIR}/${git_src}/${EXAMPLE_DIR}
+    TEST_DIR=${BASE_DIR}/${git_src}/${example_dir}
 
     INFRA_DIR="${BASE_DIR}/${infra_dir}"
 
@@ -163,7 +162,7 @@ run:
     ### Begin pull request test
     if [[ "${git_src}" != "${git_target}" ]]; then
       
-      PR_TEST_DIR="${BASE_DIR}/${git_target}/${EXAMPLE_DIR}"
+      PR_TEST_DIR="${BASE_DIR}/${git_target}/${example_dir}"
 
       # Copy remote backend
       cp "${TEST_DIR}/backend.tf" "${PR_TEST_DIR}/"
