@@ -56,7 +56,7 @@ run:
 
     TEST_DIR=${BASE_DIR}/${git_src}/${EXAMPLE_DIR}
 
-    INFRA_DIR="${BASE_DIR}/${git_src}/tests/infra/example-gke-nat-gateway-private"
+    INFRA_DIR="${BASE_DIR}/${git_src}/tests/infra/example-gke-nat-gateway-zonal"
 
     # Always cleanup on exit
     function cleanup {
