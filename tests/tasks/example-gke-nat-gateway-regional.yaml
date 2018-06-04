@@ -83,17 +83,6 @@ run:
     export GOOGLE_APPLICATION_CREDENTIALS=${SA_JSON}
     export GOOGLE_PROJECT=$project_id
 
-    BASE_DIR=${PWD}
-    INFRA_DIR=""
-    TEST_DIR=""
-
-    function cleanup {
-      for d in ${TEST_DIR} ${INFRA_DIR}; do
-        cd ${d}/ && terraform destroy -input=false -lock=false -auto-approve
-      done
-    }
-    trap cleanup EXIT
-
     ### Apply test infrastructure
 
     cd ${INFRA_DIR}
@@ -155,7 +144,7 @@ run:
     # Run Terraform
     terraform init -no-color -upgrade=true
     terraform workspace select ${env_name} || terraform workspace new ${env_name}
-    terraform plan -no-color
+    terraform plan -lock=false -no-color
     terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
 
     # Test NAT Gateway
@@ -187,6 +176,6 @@ run:
       # Run Terraform
       terraform init -no-color -upgrade=true
       terraform workspace select ${env_name} || terraform workspace new ${env_name}
-      terraform plan -no-color
+      terraform plan -lock=false -no-color
       terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
     fi
