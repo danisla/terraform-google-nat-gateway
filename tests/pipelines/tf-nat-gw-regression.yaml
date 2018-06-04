@@ -36,7 +36,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: git/test/tasks/check-nat-region-map.yaml
+    file: git/tests/tasks/check-nat-region-map.yaml
 
 ###
 # run-example-gke-zonal
@@ -52,11 +52,14 @@ jobs:
 
   - task: run-example-gke-zonal
     params:
+      git_src: git
+      git_target: git
       service_account_json: {{service_account_json}}
       project_id: {{project_id}}
       backend_bucket: {{tf_backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-gke-zonal
+      infra_dir: git/tests/infra/example-gke-nat-gateway-zonal
       region: us-west1
       zone: us-west1-b
     on_failure:
@@ -64,7 +67,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: git/test/tasks/example-gke-nat-gateway-zonal.yaml
+    file: git/tests/tasks/example-gke-nat-gateway-zonal.yaml
 
 ###
 # run-example-gke-regional
@@ -80,11 +83,14 @@ jobs:
 
   - task: run-example-gke-regional
     params:
+      git_src: git
+      git_target: git
       service_account_json: {{service_account_json}}
       project_id: {{project_id}}
       backend_bucket: {{tf_backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-gke-regional
+      infra_dir: git/tests/infra/example-gke-nat-gateway-regional
       region: us-central1
       zone: us-central1-f
     on_failure:
@@ -92,7 +98,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: git/test/tasks/example-gke-nat-gateway-regional.yaml
+    file: git/tests/tasks/example-gke-nat-gateway-regional.yaml
 
 ###
 # run-example-gke-private
@@ -115,6 +121,7 @@ jobs:
       backend_bucket: {{tf_backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-gke-private
+      infra_dir: git/tests/infra/example-gke-nat-gateway-private
       region: us-east1
       zone: us-east1-b
     on_failure:
@@ -122,7 +129,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: git/test/tasks/example-gke-nat-gateway-private.yaml
+    file: git/tests/tasks/example-gke-nat-gateway-private.yaml
   
 ###
 # run-example-ha-nat-gateway
@@ -153,7 +160,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: git/test/tasks/example-ha-nat-gateway.yaml
+    file: git/tests/tasks/example-ha-nat-gateway.yaml
 
 ###
 # run-example-lb-nat-gateway
@@ -181,7 +188,7 @@ jobs:
       params:
         subject: email/subject-failed
         body: email/body-failed
-    file: git/test/tasks/example-lb-nat-gateway.yaml
+    file: git/tests/tasks/example-lb-nat-gateway.yaml
 
 ###
 # run-example-multi-env

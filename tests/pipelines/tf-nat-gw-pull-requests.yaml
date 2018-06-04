@@ -81,14 +81,16 @@ jobs:
 
   - task: run-example-gke-regional
     params:
+      git_src: git
+      git_target: git-pull-requests
       service_account_json: {{service_account_json}}
       project_id: {{project_id}}
       backend_bucket: {{tf_backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-gke-regional-pr
       infra_dir: git/tests/infra/example-gke-nat-gateway-regional
-      region: us-central1
-      zone: us-central1-f
+      region: us-east4
+      zone: us-east4-c
     on_success:
       put: git-pull-requests
       params:
