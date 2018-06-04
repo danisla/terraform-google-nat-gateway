@@ -15,9 +15,9 @@
 jobs:
 
 ###
-# run-example-gke-zonal-prs
+# run-example-gke-zonal-pr
 ###
-- name: run-example-gke-zonal
+- name: run-example-gke-zonal-pr
   serial: true
   plan:
   - get: git
@@ -32,7 +32,7 @@ jobs:
       path: git-pull-requests
       status: pending
 
-  - task: run-example-gke-zonal-pr
+  - task: run-example-gke-zonal
     params:
       git_src: git
       git_target: git-pull-requests
@@ -41,6 +41,7 @@ jobs:
       backend_bucket: {{tf_backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-gke-zonal-pr
+      infra_dir: git/tests/infra/example-gke-nat-gateway-zonal
       region: us-east4
       zone: us-east4-b
     on_success:
@@ -61,12 +62,56 @@ jobs:
     file: git/tests/tasks/example-gke-nat-gateway-zonal.yaml
 
 ###
-# run-example-gke-private
+# run-example-gke-regional-pr
 ###
-- name: run-example-gke-private
+- name: run-example-gke-regional-pr
   serial: true
   plan:
+  - get: git
+    trigger: false
 
+  - get: git-pull-requests
+    trigger: true
+    version: every
+  
+  - put: git-pull-requests
+    params:
+      path: git-pull-requests
+      status: pending
+
+  - task: run-example-gke-regional
+    params:
+      service_account_json: {{service_account_json}}
+      project_id: {{project_id}}
+      backend_bucket: {{tf_backend_bucket}}
+      backend_prefix: terraform-google-nat-gateway/
+      env_name: tf-ci-nat-gke-regional-pr
+      infra_dir: git/tests/infra/example-gke-nat-gateway-regional
+      region: us-central1
+      zone: us-central1-f
+    on_success:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: success
+    on_failure:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: failure
+    on_abort:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: failure
+    file: git/tests/tasks/example-gke-nat-gateway-regional.yaml
+
+###
+# run-example-gke-private-pr
+###
+- name: run-example-gke-private-pr
+  serial: true
+  plan:
   - get: git
     trigger: false
 
@@ -88,6 +133,7 @@ jobs:
       backend_bucket: {{tf_backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-gke-private-pr
+      infra_dir: git/tests/infra/example-gke-nat-gateway-private
       region: us-west1
       zone: us-west1-b
     on_success:

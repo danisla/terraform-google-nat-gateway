@@ -219,7 +219,6 @@ jobs:
 # Resource types
 ###
 resource_types:
-resource_types:
 - name: git
   type: docker-image
   source:
