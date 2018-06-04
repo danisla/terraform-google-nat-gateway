@@ -170,9 +170,13 @@ run:
 
       cd ${PR_TEST_DIR}
 
-      # Run Terraform
+      ### Upgrade test
       terraform init -no-color -upgrade=true
       terraform workspace select ${env_name} || terraform workspace new ${env_name}
       terraform plan -lock=false -no-color
+      terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
+
+      ### Clean apply test
+      terraform destroy -input=false -lock=false -auto-approve
       terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
     fi
