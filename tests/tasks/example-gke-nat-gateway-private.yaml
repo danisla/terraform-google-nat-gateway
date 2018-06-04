@@ -67,7 +67,7 @@ run:
     }
     trap cleanup EXIT
 
-    cd ${TEST_DIR}
+    cd ${git_src}
 
     # Setup email
     EMAIL=${BASE_DIR}/email
@@ -127,6 +127,15 @@ run:
     zone          = "${ZONE}"
     gke_master_ip = ""
     gke_node_tag  = "${NODE_TAG}"
+    EOF
+
+    cat > backend.tf <<EOF
+    terraform {
+      backend "gcs" {
+        bucket     = "${backend_bucket}"
+        prefix     = "${backend_prefix}"
+      }
+    }
     EOF
     
     # Run Terraform

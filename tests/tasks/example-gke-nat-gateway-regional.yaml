@@ -67,7 +67,7 @@ run:
     }
     trap cleanup EXIT
 
-    cd ${TEST_DIR}
+    cd ${git_src}
 
     # Setup email
     EMAIL=${BASE_DIR}/email
