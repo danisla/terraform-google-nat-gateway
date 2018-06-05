@@ -91,24 +91,28 @@ run:
       }
     }
     EOF
-    
-    # Run Terraform
-    terraform init -no-color -upgrade=true
-    terraform workspace select ${env_name} || terraform workspace new ${env_name}
-    terraform plan -lock=false -no-color
-    terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
 
-    export NAT_HOST=$(terraform output nat-host)
-    export REMOTE_HOST_URI=$(terraform output remote-host-uri)
-    export EXTERNAL_IP_1=$(terraform output ip-nat-zone-1)
-    export EXTERNAL_IP_2=$(terraform output ip-nat-zone-2)
-    export EXTERNAL_IP_3=$(terraform output ip-nat-zone-3)
-    
-    # Test NAT Gateway
-    echo "" > ${EMAIL}/body-failed
-    bash -xe ./test.sh | tee ${EMAIL}/body-failed
+    # Apply and test function
+    function apply_and_run_test() {
+      terraform init -no-color -upgrade=true
+      terraform workspace select ${env_name} || terraform workspace new ${env_name}
+      terraform plan -lock=false -no-color
+      terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
 
-    ### Begin pull request test
+      export NAT_HOST=$(terraform output nat-host)
+      export REMOTE_HOST_URI=$(terraform output remote-host-uri)
+      export EXTERNAL_IP_1=$(terraform output ip-nat-zone-1)
+      export EXTERNAL_IP_2=$(terraform output ip-nat-zone-2)
+      export EXTERNAL_IP_3=$(terraform output ip-nat-zone-3)
+      
+      echo "" > ${EMAIL}/body-failed
+      bash -xe ./test.sh | tee ${EMAIL}/body-failed
+    }
+
+    # Run Terraform and tests
+    apply_and_run_test
+
+    ### Begin upgrade test
     if [[ "${git_src}" != "${git_target}" ]]; then
       
       PR_TEST_DIR="${BASE_DIR}/${git_target}/${example_dir}"
@@ -119,12 +123,5 @@ run:
       cd ${PR_TEST_DIR}
 
       ### Upgrade test
-      terraform init -no-color -upgrade=true
-      terraform workspace select ${env_name} || terraform workspace new ${env_name}
-      terraform plan -lock=false -no-color
-      terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
-
-      ### Clean apply test
-      terraform destroy -input=false -lock=false -auto-approve
-      terraform apply -no-color -input=false -lock=false -auto-approve | tee ${EMAIL}/body-failed
+      apply_and_run_test
     fi
