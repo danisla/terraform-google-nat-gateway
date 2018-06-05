@@ -137,7 +137,7 @@ run:
         prefix     = "${backend_prefix}"
       }
     }
-    EOF    
+    EOF
 
     # Apply and test function
     function apply_and_run_test() {
