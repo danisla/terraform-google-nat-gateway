@@ -61,8 +61,11 @@ run:
     # Always cleanup on exit
     function cleanup {
       cd ${TEST_DIR} && terraform destroy -input=false -lock=false -auto-approve
+      
       # Keep infra for next task when testing PRs
-      test "${git_src}" == "${git_target}" && cd ${INFRA_DIR} && terraform destroy -input=false -lock=false -auto-approve
+      if [[ "${git_src}" == "${git_target}" ]]; then
+        cd ${INFRA_DIR} && terraform destroy -input=false -lock=false -auto-approve
+      fi
     }
     trap cleanup EXIT
 
