@@ -33,3 +33,7 @@ output external_ip {
   description = "The external IP address of the NAT gateway instance."
   value       = "${data.google_compute_address.default.address}"
 }
+
+output startup_script_test {
+  value = "${data.template_file.nat-startup-script.rendered}"
+}
