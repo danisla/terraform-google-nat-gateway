@@ -63,7 +63,3 @@ resource "google_compute_route" "gke-master-default-gw" {
 output "ip-nat-gateway" {
   value = "${module.nat.external_ip}"
 }
-
-output "route-name" {
-  value = "${google_compute_route.gke-master-default-gw.name}"
-}
