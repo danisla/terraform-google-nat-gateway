@@ -52,6 +52,14 @@ run:
     gcloud config set project $project_id
     gcloud config set compute/zone $zone
 
+    SSH_KEY=${HOME}/.ssh/google_compute_engine
+    mkdir -p ${HOME}/.ssh && chmod 0700 ${HOME}/.ssh
+    cat > ${SSH_KEY} <<EOF
+    $compute_ssh_key
+    EOF
+    chmod 0600 ${SSH_KEY}
+  
+
     BASE_DIR=${PWD}
 
     TEST_DIR=${BASE_DIR}/${git_src}/${example_dir}
