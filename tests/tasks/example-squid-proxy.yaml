@@ -28,6 +28,8 @@ params:
   git_src:
   git_target:
   service_account_json:
+  compute_ssh_key:
+  compute_ssh_pub:
   project_id:
   backend_bucket:
   backend_prefix:
@@ -58,7 +60,11 @@ run:
     $compute_ssh_key
     EOF
     chmod 0600 ${SSH_KEY}
-  
+
+    SSH_PUB=${HOME}/.ssh/google_compute_engine.pub
+    cat > ${SSH_PUB} <<EOF
+    $compute_ssh_pub
+    EOF
 
     BASE_DIR=${PWD}
 
