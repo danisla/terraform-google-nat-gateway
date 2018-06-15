@@ -151,6 +151,8 @@ jobs:
       git_src: git
       git_target: git
       service_account_json: ((common.service_account_json))
+      compute_ssh_key: ((common.compute_ssh_key))
+      compute_ssh_pub: ((common.compute_ssh_pub))
       project_id: {{project_id}}
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
@@ -186,6 +188,8 @@ jobs:
       git_src: git
       git_target: git
       service_account_json: ((common.service_account_json))
+      compute_ssh_key: ((common.compute_ssh_key))
+      compute_ssh_pub: ((common.compute_ssh_pub))
       project_id: {{project_id}}
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
@@ -219,6 +223,8 @@ jobs:
       git_src: git
       git_target: git
       service_account_json: ((common.service_account_json))
+      compute_ssh_key: ((common.compute_ssh_key))
+      compute_ssh_pub: ((common.compute_ssh_pub))
       project_id: {{project_id}}
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
@@ -255,6 +261,8 @@ jobs:
       git_src: git
       git_target: git
       service_account_json: ((common.service_account_json))
+      compute_ssh_key: ((common.compute_ssh_key))
+      compute_ssh_pub: ((common.compute_ssh_pub))
       project_id: {{project_id}}
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
@@ -289,7 +297,7 @@ jobs:
       git_target: git
       service_account_json: ((common.service_account_json))
       compute_ssh_key: ((common.compute_ssh_key))
-      compute_ssh_pub: ((common.compute_ssh_pub)) 
+      compute_ssh_pub: ((common.compute_ssh_pub))
       project_id: {{project_id}}
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
