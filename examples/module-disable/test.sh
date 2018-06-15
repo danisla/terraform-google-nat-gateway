@@ -55,16 +55,16 @@ EOF
   echo "INFO: Verifying NAT IP: ${NAT_IP}"
 
   count=0
-  while [[ $count -lt 120 ]]; do
+  while [[ $count -lt 60 ]]; do
     IP=$(curl -s --socks5 localhost:1080 http://ipinfo.io/ip || true)
     if [[ "${IP}" == "${NAT_IP}" ]]; then
       echo "INFO: Found NAT IP: ${IP}"      
       break
     fi
     ((count=count+1))
-    sleep 1
+    sleep 10
   done
-  test $count -lt 120
+  test $count -lt 60
 
   echo "PASS: Egress from instance is routed through NAT IP."
 fi
@@ -91,16 +91,16 @@ EOF
   ssh_pid=$!
 
   count=0
-  while [[ $count -lt 120 ]]; do
+  while [[ $count -lt 60 ]]; do
     IP=$(curl -s --socks5 localhost:1080 http://ipinfo.io/ip || true)
     if [[ -n "${IP}" && "${IP}" == "${REMOTE_HOST_IP}" ]]; then
       echo "INFO: IP check passed: ${IP}"
       break
     fi
     ((count=count+1))
-    sleep 1
+    sleep 10
   done
-  test $count -lt 120
+  test $count -lt 60
 
   echo "PASS: Egress from instance is routed directly to internet."
 fi
