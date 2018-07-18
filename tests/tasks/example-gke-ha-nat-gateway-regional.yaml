@@ -138,6 +138,7 @@ run:
     zone1         = "${zone1}"
     zone2         = "${zone2}"
     zone3         = "${zone3}"
+    name          = "tf-ci-gke-ha-"
     gke_master_ip = "${MASTER_IP}"
     gke_node_tag  = "${NODE_TAG}"
     EOF
