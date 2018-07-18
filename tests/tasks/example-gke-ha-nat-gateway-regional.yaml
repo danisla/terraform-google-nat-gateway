@@ -35,7 +35,9 @@ params:
   example_dir:
   infra_dir:
   region:
-  zone:
+  zone1:
+  zone2:
+  zone3:
 run:
   path: bash
   args:
@@ -129,7 +131,9 @@ run:
     cat > terraform.tfvars <<EOF
     network       = "${NETWORK}"
     region        = "${REGION}"
-    zone          = "${ZONE}"
+    zone1         = "${zone1}"
+    zone2         = "${zone2}"
+    zone3         = "${zone3}"
     gke_master_ip = "${MASTER_IP}"
     gke_node_tag  = "${NODE_TAG}"
     EOF
