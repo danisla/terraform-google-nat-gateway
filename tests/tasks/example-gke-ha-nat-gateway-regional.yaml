@@ -51,7 +51,7 @@ run:
     apk add --update jq curl
     gcloud auth activate-service-account --key-file=${SA_JSON}
     gcloud config set project $project_id
-    gcloud config set compute/zone $zone
+    gcloud components install --quiet beta
 
     # Install kubectl that supports `kubectl wait`
     K8S_VERSION=v1.11.0
