@@ -93,7 +93,7 @@ run:
 
     cat > terraform.tfvars <<EOF
     region = "$region"
-    zone = "$zone"
+    zones = ["${zone1}", "${zone2}", "${zone3}"]
     network_name = "$env_name"
     EOF
 
