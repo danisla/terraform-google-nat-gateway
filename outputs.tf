@@ -43,3 +43,7 @@ output routing_tag_zonal {
   description = "The tag that any other instance will need to have in order to get the zonal routing rule"
   value       = "${var.name}nat-${var.zone == "" ? lookup(var.region_params["${var.region}"], "zone") : var.zone}"
 }
+
+output compute_route {
+  value = "${google_compute_route.nat-gateway.self_link}"
+}
