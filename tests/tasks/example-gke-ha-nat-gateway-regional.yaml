@@ -125,8 +125,6 @@ run:
     cd ${TEST_DIR}
 
     # Generate terraform.tfvars
-    ZONE=$zone
-    test -n "${ZONE}"
     NODE_TAG=$(gcloud compute instance-templates describe $(gcloud compute instance-templates list --filter=name~gke-${CLUSTER_NAME} --limit=1 --uri) --format='get(properties.tags.items[0])')
     test -n "${NODE_TAG}"
     MASTER_IP=$(gcloud compute firewall-rules describe ${NODE_TAG/-node/-ssh} --format='value(sourceRanges)')
