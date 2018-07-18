@@ -52,7 +52,11 @@ run:
     gcloud auth activate-service-account --key-file=${SA_JSON}
     gcloud config set project $project_id
     gcloud config set compute/zone $zone
-    echo "y" | gcloud components install beta kubectl
+
+    # Install kubectl that supports `kubectl wait`
+    K8S_VERSION=v1.11.0
+    curl -sfSL https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl > /usr/local/bin/kubectl
+    chmod +x /usr/local/bin/kubectl
 
     BASE_DIR=${PWD}
 
