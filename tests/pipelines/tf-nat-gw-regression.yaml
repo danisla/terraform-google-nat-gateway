@@ -27,8 +27,8 @@ jobs:
 
   - task: check-nat-region-map
     params:
-      service_account_json: ((common.service_account_json))
-      project_id: {{project_id}}
+      service_account_json: ((regression-project.service_account_json))
+      project_id: ((regression-project.project_id))
       region: us-central1
       zone: us-central1-f
     on_failure:
@@ -54,8 +54,8 @@ jobs:
     params:
       git_src: git
       git_target: git
-      service_account_json: ((common.service_account_json))
-      project_id: {{project_id}}
+      service_account_json: ((regression-project.service_account_json))
+      project_id: ((regression-project.project_id))
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-gke-zonal
@@ -70,6 +70,62 @@ jobs:
         body: email/body-failed
     file: git/tests/tasks/example-gke-nat-gateway-zonal.yaml
 
+- name: cleanup-example-gke-zonal
+  serial: true
+  plan:
+  - get: git
+    passed: ["run-example-gke-zonal"]
+    trigger: false
+  
+  - task: cleanup
+    params:
+      service_account_json: ((regression-project.service_account_json))
+      project_id: ((regression-project.project_id))
+      env_name: tf-ci-nat-gke-zonal
+      example_dir: examples/gke-nat-gateway
+      infra_dir: tests/infra/example-gke-nat-gateway-zonal
+    config:
+      image_resource:
+        type: docker-image
+        source:
+          repository: google/cloud-sdk
+          tag: alpine
+      platform: linux
+      inputs:
+      - name: git
+      run:
+        path: bash
+        args:
+        - -exc
+        - |
+          set -x
+
+          SA_JSON=${PWD}/service_account.json
+          cat > ${SA_JSON} <<EOF
+          $service_account_json
+          EOF
+          apk add --update jq curl
+          gcloud auth activate-service-account --key-file=${SA_JSON}
+          gcloud config set project $project_id
+
+          cd git
+
+          # Install latest terraform
+          bash examples/terraform-install.sh
+          source ${HOME}/.bashrc
+          terraform version
+
+          # Env for terraform google provider
+          export GOOGLE_APPLICATION_CREDENTIALS=${SA_JSON}
+          export GOOGLE_PROJECT=$project_id
+
+          # Cleanup example
+          (cd "${example_dir}" && ../../tests/cleanup.sh ${env_name})
+
+          # Cleanup infra
+          [[ -n "${infra_dir}" ]] && (cd "${infra_dir}" && ../../cleanup.sh ${env_name}-infra)
+
+          exit 0
 ###
 # run-example-gke-regional
 ###
@@ -86,8 +142,8 @@ jobs:
     params:
       git_src: git
       git_target: git
-      service_account_json: ((common.service_account_json))
-      project_id: {{project_id}}
+      service_account_json: ((regression-project.service_account_json))
+      project_id: ((regression-project.project_id))
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-gke-regional
@@ -118,8 +174,8 @@ jobs:
     params:
       git_src: git
       git_target: git
-      service_account_json: ((common.service_account_json))
-      project_id: {{project_id}}
+      service_account_json: ((regression-project.service_account_json))
+      project_id: ((regression-project.project_id))
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-gke-private
@@ -150,8 +206,8 @@ jobs:
     params:
       git_src: git
       git_target: git
-      service_account_json: ((common.service_account_json))
-      project_id: {{project_id}}
+      service_account_json: ((regression-project.service_account_json))
+      project_id: ((regression-project.project_id))
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-gke-ha-regional
@@ -168,42 +224,42 @@ jobs:
         body: email/body-failed
     file: git/tests/tasks/example-gke-ha-nat-gateway-regional.yaml
 
-# ###
-# # run-example-ha-nat-gateway
-# ###
-# - name: run-example-ha-nat-gateway
-#   serial: true
-#   plan:
-#   - get: once-a-day
-#     trigger: true
+###
+# run-example-ha-nat-gateway
+###
+- name: run-example-ha-nat-gateway
+  serial: true
+  plan:
+  - get: once-a-day
+    trigger: true
 
-#   - get: git
-#     trigger: false
+  - get: git
+    trigger: false
 
-#   - task: test-example-ha-nat
-#     params:
-#       git_src: git
-#       git_target: git
-#       service_account_json: ((common.service_account_json))
-#       compute_ssh_key: ((common.compute_ssh_key))
-#       compute_ssh_pub: ((common.compute_ssh_pub))
-#       project_id: {{project_id}}
-#       backend_bucket: {{backend_bucket}}
-#       backend_prefix: terraform-google-nat-gateway/
-#       env_name: tf-ci-nat-ha
-#       example_dir: examples/ha-nat-gateway
-#       zone: us-east4-a
-#       TF_VAR_network_name: tf-ci-nat-ha
-#       TF_VAR_region: us-east4
-#       TF_VAR_zone1: us-east4-a
-#       TF_VAR_zone2: us-east4-b
-#       TF_VAR_zone3: us-east4-c
-#     on_failure:
-#       put: send-an-email
-#       params:
-#         subject: email/subject-failed
-#         body: email/body-failed
-#     file: git/tests/tasks/example-ha-nat-gateway.yaml
+  - task: test-example-ha-nat
+    params:
+      git_src: git
+      git_target: git
+      service_account_json: ((regression-project.service_account_json))
+      compute_ssh_key: ((common.compute_ssh_key))
+      compute_ssh_pub: ((common.compute_ssh_pub))
+      project_id: ((regression-project.project_id))
+      backend_bucket: {{backend_bucket}}
+      backend_prefix: terraform-google-nat-gateway/
+      env_name: tf-ci-nat-ha
+      example_dir: examples/ha-nat-gateway
+      zone: us-east4-a
+      TF_VAR_network_name: tf-ci-nat-ha
+      TF_VAR_region: us-east4
+      TF_VAR_zone1: us-east4-a
+      TF_VAR_zone2: us-east4-b
+      TF_VAR_zone3: us-east4-c
+    on_failure:
+      put: send-an-email
+      params:
+        subject: email/subject-failed
+        body: email/body-failed
+    file: git/tests/tasks/example-ha-nat-gateway.yaml
 
 ###
 # run-example-lb-nat-gateway
@@ -221,10 +277,10 @@ jobs:
     params:
       git_src: git
       git_target: git
-      service_account_json: ((common.service_account_json))
+      service_account_json: ((regression-project.service_account_json))
       compute_ssh_key: ((common.compute_ssh_key))
       compute_ssh_pub: ((common.compute_ssh_pub))
-      project_id: {{project_id}}
+      project_id: ((regression-project.project_id))
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-lb
@@ -256,10 +312,10 @@ jobs:
     params:
       git_src: git
       git_target: git
-      service_account_json: ((common.service_account_json))
+      service_account_json: ((regression-project.service_account_json))
       compute_ssh_key: ((common.compute_ssh_key))
       compute_ssh_pub: ((common.compute_ssh_pub))
-      project_id: {{project_id}}
+      project_id: ((regression-project.project_id))
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-multi-env
@@ -294,10 +350,10 @@ jobs:
     params:
       git_src: git
       git_target: git
-      service_account_json: ((common.service_account_json))
+      service_account_json: ((regression-project.service_account_json))
       compute_ssh_key: ((common.compute_ssh_key))
       compute_ssh_pub: ((common.compute_ssh_pub))
-      project_id: {{project_id}}
+      project_id: ((regression-project.project_id))
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-disable
@@ -329,10 +385,10 @@ jobs:
     params:
       git_src: git
       git_target: git
-      service_account_json: ((common.service_account_json))
+      service_account_json: ((regression-project.service_account_json))
       compute_ssh_key: ((common.compute_ssh_key))
       compute_ssh_pub: ((common.compute_ssh_pub))
-      project_id: {{project_id}}
+      project_id: ((regression-project.project_id))
       backend_bucket: {{backend_bucket}}
       backend_prefix: terraform-google-nat-gateway/
       env_name: tf-ci-nat-squid
